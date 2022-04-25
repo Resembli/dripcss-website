@@ -2,14 +2,16 @@
 title: DripCSS
 ---
 
-## Introduction
+#### A performant bare-bones css-in-js library to build self contained React components with some [drip](https://www.urbandictionary.com/define.php?term=Drip) 💦
 
-A performant bare-bones css-in-js library to build self contained React components.
+## Introduction
 
 DripCSS was created to provide a light-weight styling solution to UI component libraries without forcing
 end users to adopt the styling solution of the library. Hence, components built using DripCSS can be included
 in projects that use other styling solutions (styled-components, css-modules, etc) and even other DripCSS instances,
 without feat of conflicts.
+
+**DripCSS was designed to mimic vanilla CSS. It is a vanilla CSS with React integration and some extra utilities.**
 
 ## Installation
 
@@ -40,7 +42,13 @@ pnpm i @resembli/dripcss
 </TabItem>
 </Tabs>
 
-## Basic Usage
+:::note
+
+`@resembli/dripcss` requires [React 18](https://reactjs.org/blog/2022/03/29/react-v18.html) to be installed.
+
+:::
+
+## Usage
 
 DripCSS has a single named export - the `css` function. This function accepts a template and returns a hook
 that can be used to style a component.
@@ -66,15 +74,76 @@ export function DripDemo() {
 }
 ```
 
-## How is DripCSS different?
+:::note
+DripCSS is essentially 'vanilla' CSS in JavaScript with some extras for creating unique class names, and linking
+css variables to dynamically calculated values.
 
-DripCSS is closer to vanilla CSS than it is to the css-in-js solutions you'd find elsewhere.
+This means everything within the template string should by treated as though you are writing styles in a normal CSS file.
 
-- Only template string syntax is supportted. Object css objects are not supported.
-- DripCSS has a near zero runtime.
-- Styles are **NOT** scoped by default. Instead the template string must use `&` to scope a style.
-  - `&` symbols in the template string will be replaced by a unique class by DripCSS.
-- Dynamic styling is only supported through CSS variables. DripCSS does not perform string interpolation, or create new classes as props change.
-  - DripCSS provides a syntax for linking CSS variables to React props.
-  - This makes DripCSS significantly faster than alternative css-in-js solutions.
-- Nested css is not supported (remember DripCSS vanilla CSS with some exta support for working with React)
+For example, comments must use `/* */` syntax and not `//`, since the later is not a valid CSS comment.
+:::
+
+### Dynamic Values
+
+This is a three step process:
+
+- Call the `css` function with your style template. Use interpolated values within the template that are functions to mark
+dynamic values for which css variables should be created.
+- Call the hook returned from `css` in your component.
+  - The hook returns a `string` (which is a unique className) if no arguments are passed to it
+  - Otherwise it returns a tuple of type `[string, CSSProperties]`
+- Set the `className` of the component you want to style. If dynamic values are being used, you need to set the `style` value to the
+object returned from the hook. It contains the values of the variables which will be applied to your component.
+
+```tsx
+import { css } from "@resembli/dripcss"
+
+const useVariableMargin = css<{ margin: number}>`
+  /* & will become a class name like css-13dadaty3 */
+  & {
+    margin: ${p => `${p.margin}px`} /* the function must return a string */
+  }
+`
+
+function MyVariableMarginComponent() {
+  const [clx, sx] = useVariableMargin({ margin: 20 });
+
+  return <div className={clx} style={sx}>I will have some margin</div>
+}
+```
+
+## Global styles
+
+```tsx
+
+const useGlobal = css`
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  #root {
+    height: 100%;
+  }
+`
+
+function App() {
+  useGlobal(); // Will return a string, but this can safely be ignored.
+
+  return <div>Some content</div>
+}
+```
+
+:::caution
+
+As in vanilla CSS, style rules are not scoped. Hence the following call:
+
+```tsx
+const useStyle = css`
+  h1 {
+    font-weight: 2rem;
+  }
+`
+```
+Will create a hook the styles all `h1` elements on the page.
+
+:::
