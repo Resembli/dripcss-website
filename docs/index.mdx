@@ -1,0 +1,80 @@
+---
+title: DripCSS
+---
+
+## Introduction
+
+A performant bare-bones css-in-js library to build self contained React components.
+
+DripCSS was created to provide a light-weight styling solution to UI component libraries without forcing
+end users to adopt the styling solution of the library. Hence, components built using DripCSS can be included
+in projects that use other styling solutions (styled-components, css-modules, etc) and even other DripCSS instances,
+without feat of conflicts.
+
+## Installation
+
+import TabItem from "@theme/TabItem"
+import Tabs from "@theme/Tabs"
+
+<Tabs>
+<TabItem value="npm" label="npm">
+
+```bash
+npm i @resembli/dripcss
+```
+
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash
+yarn add @resembli/dripcss
+```
+
+</TabItem>
+<TabItem value="pnpm" label="pnpm">
+
+```bash
+pnpm i @resembli/dripcss
+```
+
+</TabItem>
+</Tabs>
+
+## Basic Usage
+
+DripCSS has a single named export - the `css` function. This function accepts a template and returns a hook
+that can be used to style a component.
+
+import { DripDemo } from "./_components/DripDemo.tsx"
+
+<DripDemo />
+
+```jsx
+import { css } from "@resembli/dripcss"
+
+const useDrip = css`
+  & {
+    font-weight: bolder;
+    font-size: 2rem;
+  }
+`
+
+export function DripDemo() {
+  const clx = useDrip()
+
+  return <div className={clx}>Give your components some drip</div>
+}
+```
+
+## How is DripCSS different?
+
+DripCSS is closer to vanilla CSS than it is to the css-in-js solutions you'd find elsewhere.
+
+- Only template string syntax is supportted. Object css objects are not supported.
+- DripCSS has a near zero runtime.
+- Styles are **NOT** scoped by default. Instead the template string must use `&` to scope a style.
+  - `&` symbols in the template string will be replaced by a unique class by DripCSS.
+- Dynamic styling is only supported through CSS variables. DripCSS does not perform string interpolation, or create new classes as props change.
+  - DripCSS provides a syntax for linking CSS variables to React props.
+  - This makes DripCSS significantly faster than alternative css-in-js solutions.
+- Nested css is not supported (remember DripCSS vanilla CSS with some exta support for working with React)
